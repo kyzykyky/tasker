@@ -8,9 +8,9 @@ type TaskFilter struct {
 }
 
 // GetTasks returns all tasks that match the filter
-func (tm *TaskManager) GetTasks(filter TaskFilter) []*Task {
+func (tm *taskManager) GetTasks(filter TaskFilter) []*Task {
 	// Get all
-	if filter.Name == "*" || filter.Type == "*" {
+	if filter.Name == "*" || filter.Type == "*" || (len(filter.Tags) == 0 && filter.Name == "" && filter.Type == "" && filter.Status == "") {
 		tasks := make([]*Task, len(tm.tasks))
 		i := 0
 		for _, task := range tm.tasks {

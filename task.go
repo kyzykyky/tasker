@@ -13,9 +13,12 @@ type Task struct {
 	Tags []string
 	Func TaskFunc
 
-	AutoRestart bool
-	Status      string
-	err         interface{}
+	AutoRestart  bool
+	MaxRestarts  uint
+	restarts     uint
+	Status       string
+	err          interface{}
+	ErrorHandler func(err interface{})
 
 	Paralleled bool
 	Workers    uint

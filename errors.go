@@ -1,5 +1,7 @@
 package tasker
 
+import "fmt"
+
 var ()
 
 type ErrTaskInvalid struct {
@@ -16,5 +18,5 @@ type ErrTaskNotFound struct {
 }
 
 func (e ErrTaskNotFound) Error() string {
-	return "task not found"
+	return fmt.Sprintf("task not found: %#v", e.Filter)
 }

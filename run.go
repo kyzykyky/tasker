@@ -1,6 +1,8 @@
 package tasker
 
-import "log"
+import (
+	"log"
+)
 
 func (task *Task) run() {
 	if task.Paralleled && task.Workers > 1 && task.Func != nil {
@@ -40,9 +42,16 @@ func (task *Task) recoverTask() {
 		task.Status = StatusError
 		task.err = p
 		log.Println("Recovered from panic:", p)
-		// TODO: Implement auto restart
-		// if task.AutoRestart {
-		// }
+		if task.ErrorHandler != nil {
+			task.ErrorHandler(p)
+		}
+
+		if task.AutoRestart && (task.restarts < task.MaxRestarts || task.MaxRestarts <= 0) {
+			task.restarts++
+			task.Status = StatusStarted
+			task.err = nil
+			go task.runSafe()
+		}
 	}
 }
 

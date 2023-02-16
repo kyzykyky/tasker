@@ -9,13 +9,23 @@ import (
 	"github.com/kyzykyky/tasker"
 )
 
+// General complex test: Create task manager, add tasks, start tasks, recover task, run parallel, stop tasks, remove tasks
 func TestTasker(t *testing.T) {
 	// Create a new task manager
-	tm := tasker.TaskManager{}
+	tm := tasker.NewTaskManager(tasker.TaskManagerConf{
+		EnableLogger: true,
+		ErrorHandler: func(err error) {
+			log.Println("Error:", err)
+		},
+	})
+
+	paniconce := false // To test auto restart
 	// Add a task
 	tm.AddTasks(tasker.Task{
-		Name: "test1",
-		Type: "test",
+		Name:        "Task 1",
+		Type:        "test",
+		AutoRestart: true,
+		MaxRestarts: 1,
 		Func: func(ctx context.Context) {
 			for {
 				select {
@@ -25,11 +35,15 @@ func TestTasker(t *testing.T) {
 				default:
 					log.Println("Task 1 running")
 					time.Sleep(1 * time.Second)
+					if !paniconce {
+						paniconce = true
+						panic("test panic")
+					}
 				}
 			}
 		},
 	}, tasker.Task{
-		Name: "test2",
+		Name: "Task 2",
 		Type: "test",
 		Tags: []string{"parallel"},
 		Func: func(ctx context.Context) {
@@ -73,7 +87,7 @@ func TestTasker(t *testing.T) {
 	}
 
 	tm.AddTasks(tasker.Task{
-		Name: "test3",
+		Name: "Task 3",
 		Type: "test",
 		Func: func(ctx context.Context) {
 			for {
@@ -90,12 +104,11 @@ func TestTasker(t *testing.T) {
 	})
 
 	// Start added task
-	tm.StartTasks(tasker.TaskFilter{Name: "test3"})
+	tm.StartTasks(tasker.TaskFilter{Name: "Task 3"})
 
 	// Wait for 3 seconds
 	time.Sleep(3 * time.Second)
 
-	time.Sleep(2 * time.Second)
 	running := tm.GetTasks(tasker.TaskFilter{Status: tasker.StatusStarted})
 	if len(running) != 1 {
 		t.Error("Expected 1 running tasks, got", len(running))

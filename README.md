@@ -10,11 +10,18 @@
 
 ```go
 // Create a new task manager
- tm := tasker.TaskManager{}
+ tm := tasker.NewTaskManager(tasker.TaskManagerConf{
+  EnableLogger: true,
+  ErrorHandler: func(err error) {
+   log.Println("Error:", err)
+  },
+ })
  // Add a task
- tm.AddTasks(tasker.Task{
-  Name: "test1",
-  Type: "test",
+tm.AddTasks(tasker.Task{
+  Name:        "Task 1",
+  Type:        "test",
+  AutoRestart: true,
+  MaxRestarts: 1,
   Func: func(ctx context.Context) {
    for {
     select {
@@ -28,7 +35,7 @@
    }
   },
  }, tasker.Task{
-  Name: "test2",
+  Name: "Task 2",
   Type: "test",
   Tags: []string{"parallel"},
   Func: func(ctx context.Context) {
